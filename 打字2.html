@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>專業中打練習器 - 修正版</title>
+    <style>
+        :root { --primary-color: #2c3e50; --accent-color: #3498db; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; width: 90%; max-width: 700px; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; }
+        .target-box { background: #f8f9fa; padding: 25px; border-radius: 10px; font-size: 24px; line-height: 1.6; color: #333; margin-bottom: 25px; border: 2px solid #e9ecef; min-height: 80px; letter-spacing: 2px; }
+        textarea { width: 100%; height: 150px; font-size: 22px; padding: 20px; border: 2px solid #ddd; border-radius: 12px; resize: none; outline: none; box-sizing: border-box; }
+        .result-panel { display: none; margin-top: 30px; padding: 20px; background: #e8f4fd; border-radius: 10px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
+        .stat-value { display: block; font-size: 28px; font-weight: bold; color: var(--accent-color); }
+        button { margin-top: 20px; padding: 12px 30px; font-size: 18px; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>⌨️ 中打實力測驗</h1>
+    
+    <div class="target-box" id="targetText">如果看到這行，請點擊下方按鈕開始</div>
+    
+    <textarea id="inputArea" placeholder="點擊此處並開始輸入..."></textarea>
+    
+    <div id="resultPanel" class="result-panel">
+        <h3>測驗結果</h3>
+        <div class="stats-grid">
+            <div class="stat-item"><span>總耗時</span><span class="stat-value" id="resTime">0s</span></div>
+            <div class="stat-item"><span>速度</span><span class="stat-value" id="resSpeed">0 CPM</span></div>
+            <div class="stat-item"><span>正確率</span><span class="stat-value" id="resAccuracy">0%</span></div>
+        </div>
+    </div>
+    <button id="startBtn" onclick="resetTest()">開始 / 換一題</button>
+</div>
+
+<script>
+    // 題庫
+    const quizBank = [
+        "人生就像一盒巧克力，你永遠不知道你會得到什麼。",
+        "成功的秘訣在於永不放棄，堅持到底就是勝利。",
+        "書山有路勤為徑，學海無涯苦作舟。",
+        "只要功夫深，鐵杵磨成針。",
+        "珍惜當下的每一分鐘，就是對未來最好的負責。"
+    ];
+
+    let startTime = null;
+    let currentTarget = "";
+    const targetDiv = document.getElementById('targetText');
+    const inputArea = document.getElementById('inputArea');
+    const resultPanel = document.getElementById('resultPanel');
+
+    function resetTest() {
+        // 隨機選題
+        currentTarget = quizBank[Math.floor(Math.random() * quizBank.length)];
+        targetDiv.innerText = currentTarget;
+        
+        // 重設狀態
+        inputArea.value = "";
+        inputArea.disabled = false;
+        resultPanel.style.display = "none";
+        startTime = null;
+        inputArea.focus();
+    }
+
+    inputArea.addEventListener('input', () => {
+        // 第一個字按下時開始計時
+        if (!startTime && inputArea.value.length > 0) {
+            startTime = new Date();
+        }
+
+        // 當輸入長度達到目標長度時結算
+        if (inputArea.value.length >= currentTarget.length) {
+            const endTime = new Date();
+            const timeTaken = (endTime - startTime) / 1000;
+            
+            // 計算正確率
+            let correct = 0;
+            const inputVal = inputArea.value;
+            for(let i=0; i < currentTarget.length; i++) {
+                if(inputVal[i] === currentTarget[i]) correct++;
+            }
+            const accuracy = (correct / currentTarget.length) * 100;
+            const cpm = (inputVal.length / timeTaken) * 60;
+
+            // 顯示結果
+            inputArea.disabled = true;
+            document.getElementById('resTime').innerText = timeTaken.toFixed(1) + "s";
+            document.getElementById('resSpeed').innerText = Math.round(cpm) + " CPM";
+            document.getElementById('resAccuracy').innerText = Math.round(accuracy) + "%";
+            resultPanel.style.display = "block";
+        }
+    });
+
+    // 頁面載入後直接執行一次初始化
+    resetTest();
+</script>
+
+</body>
+</html>
